@@ -16,6 +16,7 @@ jobs:
       - name: Get PR title and extract ticket number
         id: pr-info
         run: |
+          pwd
           PR_TITLE=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
           PR_NUMBER=$(echo $PR_TITLE | grep -oP '(?<=MYTEAM-)\d+')
           
