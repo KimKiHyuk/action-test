@@ -1,0 +1,30 @@
+name: Update Jira Ticket
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  update-jira-ticket:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get PR title and extract ticket number
+        id: pr-info
+        run: |
+          PR_TITLE=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
+          PR_NUMBER=$(echo $PR_TITLE | grep -oP '(?<=MYTEAM-)\d+')
+          
+          if [ -n "$PR_NUMBER" ]; then
+            JIRA_TICKET_TITLE="[MYTEAM-${PR_NUMBER}] - ${PR_TITLE}"
+            JIRA_LINK="https://atlassian.net/browse/MYTEAM-${PR_NUMBER}"
+          
+            sed -i "s|MYTEAM-X|MYTEAM-${PR_NUMBER}|g" .github/PULL_REQUEST_TEMPLATE.md
+            sed -i "s|https://atlassian.net/browse/MYTEAM-X|${JIRA_LINK}|g" .github/PULL_REQUEST_TEMPLATE.md
+          fi
+        env:
+          GITHUB_SERVER_URL: ${{ secrets.GITHUB_SERVER_URL }}
